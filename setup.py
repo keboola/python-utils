@@ -9,12 +9,17 @@ setuptools.setup(
     author="Keboola KDS Team",
     setup_requires=['pytest-runner', 'flake8'],
     tests_require=['pytest'],
+    install_requires=[
+        'dateparser',
+        'pytz'
+    ],
     author_email="data_ca@keboola.com",
     description="General utility library for Python applications running in Keboola Connection environment",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/keboola/python-utils",
-    packages=setuptools.find_namespace_packages(include=['keboola.*']),
+    packages=['keboola.utils'],
+    package_dir={'': 'src'},
     include_package_data=True,
     zip_safe=False,
     classifiers=[
