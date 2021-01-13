@@ -4,10 +4,10 @@ import pytz
 from _datetime import timedelta
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from typing import Tuple, Generator, Union
+from typing import Tuple, Generator, Union, Dict
 
 date_tuple = Union[Tuple[datetime, datetime], Tuple[str, str]]
-date_gen = Generator[dict[str, datetime], None, None]
+date_gen = Generator[Dict[str, datetime], None, None]
 
 
 class DateUtils:
