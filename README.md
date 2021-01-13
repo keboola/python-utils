@@ -29,36 +29,38 @@ The package currently contains one core module:
 
 - `keboola.utils.date` - a set of methods for date manipulation.
 
-### DateUtils
+### Date Utilities
 
-The class contains all date related functions, which can be utilized to effective work with dates, when creating components for Keboola Connection.
+The module contains all date related functions, which can be utilized to effective work with dates, when creating components for Keboola Connection.
 
 #### Initialization
 
-No input parameters are required to utilize the `DateUtils` class.
-
-The class can be imported and initialized using:
+All util functions can be imported from `keboola.utils` module.
 
 ```python
-from keboola.utils import DateUtils
-
-dutils = DateUtils()
+from keboola.utils import *
 ```
+
+or 
+
+```python
+import keboola.utils.date
+```
+
+to import only functions from a certain module.
 
 #### Getting converted date period from string
 
 The function `get_date_period_converted()` allows to parse any string containing date format into a Python datetime; or if `strformat` parameter is specified, into a datetime formatted string.
 
 ```python
-from keboola.utils import DateUtils
-
-dutils = DateUtils()
+from keboola.utils import *
 
 dt_str_1 = '5 days ago'
 dt_str_2 = 'today'
 dt_format = '%Y-%m-%d'
 
-start_date, end_date = dutils.get_date_period_converted(dt_str_1, dt_str_2, dt_format)
+start_date, end_date = get_date_period_converted(dt_str_1, dt_str_2, dt_format)
 ```
 
 #### Generating date period chunks
@@ -66,10 +68,9 @@ start_date, end_date = dutils.get_date_period_converted(dt_str_1, dt_str_2, dt_f
 The function `split_dates_to_chunks()` allows to split time interval into chunks of specified size.
 
 ```python
-from keboola.utils import DateUtils
+import keboola.utils.date as dutils
 from datetime import date
 
-dutils = DateUtils()
 dt_1 = date(2021, 1, 1)
 dt_2 = date(2021, 1, 10)
 dt_format = '%Y-%m-%d'
@@ -83,9 +84,7 @@ for intv in intervals:
 #### Usage Example
 
 ```python
-from keboola.utils import DateUtils
-
-dutils = DateUtils()
+import keboola.utils.date as dutils
 
 dt_str_1 = '5 days ago'
 dt_str_2 = 'today'
