@@ -3,7 +3,7 @@ import datetime
 import unittest
 import pytz
 
-from keboola.utils.date import DateUtils
+from src.keboola.utils.date import DateUtils
 
 
 class TestDateUtils(unittest.TestCase):
