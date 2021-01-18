@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="keboola.utils",
-    version="0.0.1",
+    version="0.0.2",
     author="Keboola KDS Team",
     setup_requires=['pytest-runner', 'flake8'],
     tests_require=['pytest'],
@@ -20,6 +20,7 @@ setuptools.setup(
     url="https://github.com/keboola/python-utils",
     packages=['keboola.utils'],
     package_dir={'': 'src'},
+    test_suite='tests',
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -33,5 +34,5 @@ setuptools.setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Development Status :: 4 - Beta"
     ],
-    python_requires='>=3.6'
+    python_requires='>=3.7'
 )

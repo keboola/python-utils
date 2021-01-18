@@ -11,7 +11,7 @@ date_gen = Generator[Dict[str, datetime], None, None]
 date_chunk = Union[date_gen, List]
 
 
-def get_date_period_converted(period_from: str, period_to: str, strformat: str = None) -> date_tuple:
+def parse_datetime_interval(period_from: str, period_to: str, strformat: str = None) -> date_tuple:
     """
     Returns given period parameters in datetime format, or next step in back-fill mode
     along with generated last state for next iteration.
@@ -36,62 +36,6 @@ def get_date_period_converted(period_from: str, period_to: str, strformat: str =
         return start_date_form, end_date_form
     else:
         return start_date_form.strftime(strformat), end_date_form.strftime(strformat)
-
-
-def get_backfill_period(period_from: str, period_to: str, last_state: dict) -> date_tuple:
-    """
-    Get backfill period, either specified period in datetime type or period based on a previous run (last_state)
-    Continues iterating date periods based on the initial period size defined by from and to parameters.
-    ex.:
-    Run 1:
-    _get_backfill_period("2018-01-01", "2018-01-03", None ) -> datetime("2018-01-01"),datetime("2018-01-03"),state)
-
-    Run 2:
-    _get_backfill_period("2018-01-01", "2018-01-03", last_state(from previous) )
-            -> datetime("2018-01-03"), datetime("2018-01-05"), state)
-
-    etc...
-
-    :type last_state: dict
-    - None or state file produced by backfill mode
-    e.g. {"last_period" : {
-                            "start_date": "2018-01-01",
-                            "end_date": "2018-01-02"
-                            }
-        }
-
-    Args:
-        period_to: YYYY-MM-DD format or relative string supported by date parser e.g. 5 days ago
-        period_from: YYYY-MM-DD format or relative string supported by date parser e.g. 5 days ago
-        last_state: A dictionary containing last saved state or None
-                    e.g. {
-                            "last_period" : {
-                            "start_date": "2018-01-01",
-                            "end_date": "2018-01-02"
-                        }
-                    }
-
-    Returns:
-        start_date: datetime, end_date: datetime, state_file: dict
-    """
-    if last_state and last_state.get('last_period'):
-        last_start_date = datetime.strptime(last_state['last_period']['start_date'], '%Y-%m-%d')
-        last_end_date = datetime.strptime(last_state['last_period']['end_date'], '%Y-%m-%d')
-
-        diff = last_end_date - last_start_date
-        # if period is a single day
-        if diff.days == 0:
-            diff = timedelta(days=1)
-
-        start_date = last_end_date
-        if (last_end_date.date() + diff) >= datetime.now(pytz.utc).date() + timedelta(days=1):
-            end_date = datetime.now(pytz.utc)
-        else:
-            end_date = last_end_date + diff
-    else:
-        start_date = dateparser.parse(period_from)
-        end_date = dateparser.parse(period_to)
-    return start_date, end_date
 
 
 def get_past_date(str_days_ago: str, to_date: datetime = None,

@@ -9,7 +9,7 @@ import keboola.utils.date as dutils
 
 class TestDateUtils(unittest.TestCase):
 
-    def test_get_date_period_converted_success(self):
+    def test_parse_datetime_interval_success(self):
         period_1 = '5 days ago'
         period_2 = 'yesterday'
         dt_format = '%Y-%m-%d'
@@ -18,14 +18,14 @@ class TestDateUtils(unittest.TestCase):
         period_2_str = dateparser.parse(period_2).strftime(dt_format)
 
         self.assertTupleEqual((period_1_str, period_2_str),
-                              dutils.get_date_period_converted(period_1, period_2, dt_format))
+                              dutils.parse_datetime_interval(period_1, period_2, dt_format))
 
-    def test_get_date_period_converted_fail(self):
+    def test_parse_datetime_interval_fail(self):
         period_1 = '5 days ago'
         period_2 = 'yesterday'
 
         with self.assertRaises(ValueError, msg='start_date cannot exceed end_date.'):
-            dutils.get_date_period_converted(period_2, period_1)
+            dutils.parse_datetime_interval(period_2, period_1)
 
     def test_split_dates_to_chunks_list_interval_0(self):
         expected_result = [
