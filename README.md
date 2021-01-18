@@ -51,7 +51,9 @@ to import only functions from a certain module.
 
 #### Getting converted date period from string
 
-The function `get_date_period_converted()` allows to parse any string containing date format into a Python datetime; or if `strformat` parameter is specified, into a datetime formatted string.
+The function `parse_datetime_interval()` allows to parse any string containing date format into a Python datetime; or if `strformat` parameter is specified, into a datetime formatted string.
+
+The positional arguments `period_from` and `period_to` can be specified in relative format (e.g. `3 days ago`, `2 months ago`, etc.) or in absolute format (e.g. `2020-01-01`). For full list of supported formats, please refer to [`dateparser` documentation](https://dateparser.readthedocs.io/en/latest/introduction.html#features).
 
 ```python
 from keboola.utils import *
@@ -60,7 +62,7 @@ dt_str_1 = '5 days ago'
 dt_str_2 = 'today'
 dt_format = '%Y-%m-%d'
 
-start_date, end_date = get_date_period_converted(dt_str_1, dt_str_2, dt_format)
+start_date, end_date = parse_datetime_interval(dt_str_1, dt_str_2, dt_format)
 ```
 
 #### Generating date period chunks
@@ -90,7 +92,7 @@ dt_str_1 = '5 days ago'
 dt_str_2 = 'today'
 dt_format = '%Y-%m-%d'
 
-start_date, end_date = dutils.get_date_period_converted(dt_str_1, dt_str_2)
+start_date, end_date = dutils.parse_datetime_interval(dt_str_1, dt_str_2)
 
 intervals = dutils.split_dates_to_chunks(start_date, end_date, intv=2, strformat=dt_format)
 
