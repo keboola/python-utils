@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="keboola.utils",
-    version="0.0.2",
+    version="0.1.0",
     author="Keboola KDS Team",
     setup_requires=['pytest-runner', 'flake8'],
     tests_require=['pytest'],
@@ -13,16 +13,16 @@ setuptools.setup(
         'dateparser',
         'pytz'
     ],
-    author_email="data_ca@keboola.com",
+    author_email="support@keboola.com",
     description="General utility library for Python applications running in Keboola Connection environment",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/keboola/python-utils",
     packages=['keboola.utils'],
     package_dir={'': 'src'},
-    test_suite='tests',
     include_package_data=True,
     zip_safe=False,
+    test_suite='tests',
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
