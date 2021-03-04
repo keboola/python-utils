@@ -2,15 +2,18 @@
 
 ## Introduction
 
+![Build & Test](https://github.com/keboola/python-utils/workflows/Build%20&%20Test/badge.svg?branch=main)
+[![Code Climate](https://codeclimate.com/github/keboola/python-utils/badges/gpa.svg)](https://codeclimate.com/github/keboola/python-utils)
+
 The library provides a useful set of utility functions frequently used when creating Python components for Keboola Connection. The utility library should be used in cooperation with the main [Python Component](https://github.com/keboola/python-component) library.
 
 The Python Utility library is developed the Keboola Data Services team and is officially supported by Keboola. The library aims to ease the component creation process by removing the necessity to write frequently used functions all over again.
 
 ## Links
 
-- API Documentation: [API Docs](https://github.com/keboola/python-utils/blob/main)
+- API Documentation: [API Docs](https://htmlpreview.github.io/?https://raw.githubusercontent.com/keboola/python-utils/main/docs/api-html/utils/date.html)
 - Source code: [https://github.com/keboola/python-utils](https://github.com/keboola/python-utils)
-- PYPI project code: [link](link)
+- PYPI project code: [https://pypi.org/project/keboola.utils](https://pypi.org/project/keboola.utils)
 - Documentation: [https://developers.keboola.com/extend/component/python-component-library](https://developers.keboola.com/extend/component/python-component-library)
 
 ## Quick start
