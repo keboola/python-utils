@@ -40,7 +40,7 @@ class TestDateUtils(unittest.TestCase):
         dt_f = '%Y-%m-%d'
 
         self.assertCountEqual(expected_result,
-                              dutils.split_dates_to_chunks(dt_1, dt_2, 0, dt_f, False))
+                              dutils.split_dates_to_chunks(dt_1, dt_2, 0, dt_f, generator=False))
 
     def test_split_dates_to_chunks_list_interval_lower_than_nr(self):
         expected_result = [
@@ -54,7 +54,7 @@ class TestDateUtils(unittest.TestCase):
         dt_f = '%Y-%m-%d'
 
         self.assertCountEqual(expected_result,
-                              dutils.split_dates_to_chunks(dt_1, dt_2, 2, dt_f))
+                              dutils.split_dates_to_chunks(dt_1, dt_2, 2, dt_f, generator=False))
 
     def test_split_dates_to_chunks_list_interval_higher_than_nr(self):
         expected_result = [
@@ -66,7 +66,7 @@ class TestDateUtils(unittest.TestCase):
         dt_f = '%Y-%m-%d'
 
         self.assertCountEqual(expected_result,
-                              dutils.split_dates_to_chunks(dt_1, dt_2, 10, dt_f, False))
+                              dutils.split_dates_to_chunks(dt_1, dt_2, 10, dt_f, generator=False))
 
     def test_split_dates_to_chunks_gen_interval_0(self):
         expected_result = [
@@ -80,7 +80,7 @@ class TestDateUtils(unittest.TestCase):
         dt_2 = datetime.datetime(2021, 1, 5, 0, 0, 0, tzinfo=pytz.UTC)
         dt_f = '%Y-%m-%d'
 
-        date_gen = dutils.split_dates_to_chunks(dt_1, dt_2, 0, dt_f, True)
+        date_gen = dutils.split_dates_to_chunks(dt_1, dt_2, 0, dt_f, generator=True)
 
         self.assertIsInstance(date_gen, types.GeneratorType)
         self.assertCountEqual(expected_result, list(date_gen))
@@ -96,7 +96,7 @@ class TestDateUtils(unittest.TestCase):
         dt_2 = datetime.datetime(2021, 1, 6, 0, 0, 0, tzinfo=pytz.UTC)
         dt_f = '%Y-%m-%d'
 
-        date_gen = dutils.split_dates_to_chunks(dt_1, dt_2, 2, dt_f, True)
+        date_gen = dutils.split_dates_to_chunks(dt_1, dt_2, 2, dt_f, generator=True)
 
         self.assertIsInstance(date_gen, types.GeneratorType)
         self.assertCountEqual(expected_result, list(date_gen))
@@ -110,7 +110,7 @@ class TestDateUtils(unittest.TestCase):
         dt_2 = datetime.datetime(2021, 1, 6, 0, 0, 0, tzinfo=pytz.UTC)
         dt_f = '%Y-%m-%d'
 
-        date_gen = dutils.split_dates_to_chunks(dt_1, dt_2, 10, dt_f, True)
+        date_gen = dutils.split_dates_to_chunks(dt_1, dt_2, 10, dt_f, generator=True)
 
         self.assertIsInstance(date_gen, types.GeneratorType)
         self.assertCountEqual(expected_result, list(date_gen))

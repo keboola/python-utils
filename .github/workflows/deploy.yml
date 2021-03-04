@@ -1,8 +1,8 @@
-name: BUild & Upload Python Package to PYPI production
+name: Build & Upload Python Package to PYPI production
 
 on:
   release:
-    types: [ created ]
+    types: [ published ]
     branches:
       - main
 
@@ -34,4 +34,4 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           python setup.py sdist bdist_wheel
-          twine upload --repository testpypi dist/*
+          twine upload dist/*
