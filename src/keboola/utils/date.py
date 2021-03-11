@@ -1,10 +1,11 @@
-import dateparser
 import math
-import pytz
 from _datetime import timedelta
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from typing import Tuple, Generator, Union, Dict, List
+
+import dateparser
+import pytz
+from dateutil.relativedelta import relativedelta
 
 date_tuple = Union[Tuple[datetime, datetime], Tuple[str, str]]
 date_gen = Generator[Dict[str, datetime], None, None]
@@ -39,7 +40,7 @@ def parse_datetime_interval(period_from: str, period_to: str, strformat: str = N
 
 
 def get_past_date(str_days_ago: str, to_date: datetime = None,
-                  tz: pytz.tzinfo.BaseTzInfo = pytz.utc) -> object:
+                  tz: pytz.tzinfo = pytz.utc) -> object:
     """
     Returns date in specified timezone relative to to_date parameter.
 
@@ -54,26 +55,46 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
     Args:
         str_days_ago: A string specifying some kind of date, in relative or absolute format
         to_date: A date, from which the relative date will be calculated. Default: today's date
-        tz: A timezone specifier of type pytz.tzinfo.BaseTzInfo
+        tz: A timezone specifier of type pytz.tzinfo
 
     Returns:
         date: datetime
     """
-    if to_date:
-        TODAY = to_date
-    else:
-        TODAY = datetime.datetime.now(tz)
+
+    today_date = datetime.now(tz)
+    if not to_date:
+        to_date = today_date
+
+    # add timezone awareness to allow date subtraction
+    to_date = add_timezone_info(to_date, tz)
 
     try:
-        today_diff = (datetime.datetime.now(tz) - TODAY).days
+        today_diff = (today_date - to_date).days
         past_date = dateparser.parse(str_days_ago)
-        past_date.replace(tzinfo=tz)
+        past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
         return date
-    except TypeError:
+    except TypeError as e:
         raise ValueError(
-            "Please enter valid date parameters. Some of the values (%s, %s)are not in supported format",
-            str_days_ago)
+            f"Please enter valid date parameters. Some of the values ({str_days_ago}, {str(to_date)}) are "
+            f"not in supported format. Raised: {e}")
+
+
+def add_timezone_info(to_date: datetime, tz: pytz.tzinfo = pytz.utc) -> datetime:
+    """
+    Add timezone info if not present. Useful when making sure the datetime instances are offset-aware to allow
+    date subtracting.
+    Args:
+        to_date: datetime
+        tz: timezone
+
+    Returns: datetime object with updated timezone info
+
+    """
+    if to_date.tzinfo is None:
+        to_date = to_date.replace(tzinfo=tz)
+
+    return to_date
 
 
 def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
