@@ -87,21 +87,25 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
     Returns:
         date: datetime
     &#34;&#34;&#34;
+
     if to_date:
-        TODAY = to_date
+        if to_date.tzinfo is None:
+            TODAY = to_date.replace(tzinfo=tz)
+        else:
+            TODAY = to_date
     else:
         TODAY = datetime.now(tz)
 
     try:
         today_diff = (datetime.now(tz) - TODAY).days
         past_date = dateparser.parse(str_days_ago)
-        past_date.replace(tzinfo=tz)
+        past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
         return date
-    except TypeError:
+    except TypeError as e:
         raise ValueError(
-            &#34;Please enter valid date parameters. Some of the values (%s, %s)are not in supported format&#34;,
-            str_days_ago)
+            f&#34;Please enter valid date parameters. Some of the values ({str_days_ago}, {str(to_date)}) are &#34;
+            f&#34;not in supported format. Raised: {e}&#34;)
 
 
 def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
@@ -210,21 +214,25 @@ def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
     Returns:
         date: datetime
     &#34;&#34;&#34;
+
     if to_date:
-        TODAY = to_date
+        if to_date.tzinfo is None:
+            TODAY = to_date.replace(tzinfo=tz)
+        else:
+            TODAY = to_date
     else:
         TODAY = datetime.now(tz)
 
     try:
         today_diff = (datetime.now(tz) - TODAY).days
         past_date = dateparser.parse(str_days_ago)
-        past_date.replace(tzinfo=tz)
+        past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
         return date
-    except TypeError:
+    except TypeError as e:
         raise ValueError(
-            &#34;Please enter valid date parameters. Some of the values (%s, %s)are not in supported format&#34;,
-            str_days_ago)</code></pre>
+            f&#34;Please enter valid date parameters. Some of the values ({str_days_ago}, {str(to_date)}) are &#34;
+            f&#34;not in supported format. Raised: {e}&#34;)</code></pre>
 </details>
 </dd>
 <dt id="keboola.utils.date.parse_datetime_interval"><code class="name flex">
