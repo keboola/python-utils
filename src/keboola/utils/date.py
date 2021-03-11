@@ -59,21 +59,24 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
     Returns:
         date: datetime
     """
+
     if to_date:
+        if to_date.tzinfo is None:
+            to_date = to_date.replace(tzinfo=tz)
         TODAY = to_date
     else:
-        TODAY = datetime.datetime.now(tz)
+        TODAY = datetime.now(tz)
 
     try:
-        today_diff = (datetime.datetime.now(tz) - TODAY).days
+        today_diff = (datetime.now(tz) - TODAY).days
         past_date = dateparser.parse(str_days_ago)
-        past_date.replace(tzinfo=tz)
+        past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
         return date
-    except TypeError:
+    except TypeError as e:
         raise ValueError(
-            "Please enter valid date parameters. Some of the values (%s, %s)are not in supported format",
-            str_days_ago)
+            f"Please enter valid date parameters. Some of the values ({str_days_ago}, {str(to_date)}) are "
+            f"not in supported format. Raised: {e}")
 
 
 def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,

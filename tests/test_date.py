@@ -20,6 +20,26 @@ class TestDateUtils(unittest.TestCase):
         self.assertTupleEqual((period_1_str, period_2_str),
                               dutils.parse_datetime_interval(period_1, period_2, dt_format))
 
+    def test_get_past_date(self):
+        str_days_ago = '3 days ago'
+        tz = pytz.timezone('Europe/Prague')
+        to_date = datetime.datetime(2021, 3, 10, 10, 0, 0, tzinfo=tz)
+
+        expected_result = datetime.datetime(2021, 3, 7, 10, 0, 0).strftime('%Y-%m-%d')
+
+        self.assertEqual(expected_result,
+                         dutils.get_past_date(str_days_ago=str_days_ago, to_date=to_date, tz=tz).strftime('%Y-%m-%d'))
+
+    def test_get_past_date_no_tz(self):
+        str_days_ago = '3 days ago'
+        tz = pytz.timezone('Europe/Prague')
+        to_date = datetime.datetime(2021, 3, 10, 10, 0, 0)
+
+        expected_result = datetime.datetime(2021, 3, 7, 10, 0, 0).strftime('%Y-%m-%d')
+
+        self.assertEqual(expected_result,
+                         dutils.get_past_date(str_days_ago=str_days_ago, to_date=to_date, tz=tz).strftime('%Y-%m-%d'))
+
     def test_parse_datetime_interval_fail(self):
         period_1 = '5 days ago'
         period_2 = 'yesterday'
