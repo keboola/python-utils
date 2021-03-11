@@ -26,13 +26,14 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import dateparser
-import math
-import pytz
+<pre><code class="python">import math
 from _datetime import timedelta
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from typing import Tuple, Generator, Union, Dict, List
+
+import dateparser
+import pytz
+from dateutil.relativedelta import relativedelta
 
 date_tuple = Union[Tuple[datetime, datetime], Tuple[str, str]]
 date_gen = Generator[Dict[str, datetime], None, None]
@@ -67,7 +68,7 @@ def parse_datetime_interval(period_from: str, period_to: str, strformat: str = N
 
 
 def get_past_date(str_days_ago: str, to_date: datetime = None,
-                  tz: pytz.tzinfo.BaseTzInfo = pytz.utc) -&gt; object:
+                  tz: pytz.tzinfo = pytz.utc) -&gt; object:
     &#34;&#34;&#34;
     Returns date in specified timezone relative to to_date parameter.
 
@@ -82,22 +83,21 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
     Args:
         str_days_ago: A string specifying some kind of date, in relative or absolute format
         to_date: A date, from which the relative date will be calculated. Default: today&#39;s date
-        tz: A timezone specifier of type pytz.tzinfo.BaseTzInfo
+        tz: A timezone specifier of type pytz.tzinfo
 
     Returns:
         date: datetime
     &#34;&#34;&#34;
 
-    if to_date:
-        if to_date.tzinfo is None:
-            TODAY = to_date.replace(tzinfo=tz)
-        else:
-            TODAY = to_date
-    else:
-        TODAY = datetime.now(tz)
+    today_date = datetime.now(tz)
+    if not to_date:
+        to_date = today_date
+
+    # add timezone awareness to allow date subtraction
+    to_date = add_timezone_info(to_date, tz)
 
     try:
-        today_diff = (datetime.now(tz) - TODAY).days
+        today_diff = (today_date - to_date).days
         past_date = dateparser.parse(str_days_ago)
         past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
@@ -106,6 +106,23 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
         raise ValueError(
             f&#34;Please enter valid date parameters. Some of the values ({str_days_ago}, {str(to_date)}) are &#34;
             f&#34;not in supported format. Raised: {e}&#34;)
+
+
+def add_timezone_info(to_date: datetime, tz: pytz.tzinfo = pytz.utc) -&gt; datetime:
+    &#34;&#34;&#34;
+    Add timezone info if not present. Useful when making sure the datetime instances are offset-aware to allow
+    date subtracting.
+    Args:
+        to_date: datetime
+        tz: timezone
+
+    Returns: datetime object with updated timezone info
+
+    &#34;&#34;&#34;
+    if to_date.tzinfo is None:
+        to_date = to_date.replace(tzinfo=tz)
+
+    return to_date
 
 
 def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
@@ -163,8 +180,43 @@ def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="keboola.utils.date.add_timezone_info"><code class="name flex">
+<span>def <span class="ident">add_timezone_info</span></span>(<span>to_date: datetime.datetime, tz: <module 'pytz.tzinfo' from '/Users/smkozuch/.pyenv/versions/3.7.9/lib/python3.7/site-packages/pytz/tzinfo.py'> = &lt;UTC&gt;) ‑> datetime.datetime</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add timezone info if not present. Useful when making sure the datetime instances are offset-aware to allow
+date subtracting.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>to_date</code></strong></dt>
+<dd>datetime</dd>
+<dt><strong><code>tz</code></strong></dt>
+<dd>timezone</dd>
+</dl>
+<p>Returns: datetime object with updated timezone info</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_timezone_info(to_date: datetime, tz: pytz.tzinfo = pytz.utc) -&gt; datetime:
+    &#34;&#34;&#34;
+    Add timezone info if not present. Useful when making sure the datetime instances are offset-aware to allow
+    date subtracting.
+    Args:
+        to_date: datetime
+        tz: timezone
+
+    Returns: datetime object with updated timezone info
+
+    &#34;&#34;&#34;
+    if to_date.tzinfo is None:
+        to_date = to_date.replace(tzinfo=tz)
+
+    return to_date</code></pre>
+</details>
+</dd>
 <dt id="keboola.utils.date.get_past_date"><code class="name flex">
-<span>def <span class="ident">get_past_date</span></span>(<span>str_days_ago: str, to_date: datetime.datetime = None, tz: pytz.tzinfo.BaseTzInfo = &lt;UTC&gt;) ‑> object</span>
+<span>def <span class="ident">get_past_date</span></span>(<span>str_days_ago: str, to_date: datetime.datetime = None, tz: <module 'pytz.tzinfo' from '/Users/smkozuch/.pyenv/versions/3.7.9/lib/python3.7/site-packages/pytz/tzinfo.py'> = &lt;UTC&gt;) ‑> object</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Returns date in specified timezone relative to to_date parameter.</p>
@@ -182,7 +234,7 @@ def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
 <dt><strong><code>to_date</code></strong></dt>
 <dd>A date, from which the relative date will be calculated. Default: today's date</dd>
 <dt><strong><code>tz</code></strong></dt>
-<dd>A timezone specifier of type pytz.tzinfo.BaseTzInfo</dd>
+<dd>A timezone specifier of type pytz.tzinfo</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -194,7 +246,7 @@ def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_past_date(str_days_ago: str, to_date: datetime = None,
-                  tz: pytz.tzinfo.BaseTzInfo = pytz.utc) -&gt; object:
+                  tz: pytz.tzinfo = pytz.utc) -&gt; object:
     &#34;&#34;&#34;
     Returns date in specified timezone relative to to_date parameter.
 
@@ -209,22 +261,21 @@ def split_dates_to_chunks(start_date: datetime, end_date: datetime, intv: int,
     Args:
         str_days_ago: A string specifying some kind of date, in relative or absolute format
         to_date: A date, from which the relative date will be calculated. Default: today&#39;s date
-        tz: A timezone specifier of type pytz.tzinfo.BaseTzInfo
+        tz: A timezone specifier of type pytz.tzinfo
 
     Returns:
         date: datetime
     &#34;&#34;&#34;
 
-    if to_date:
-        if to_date.tzinfo is None:
-            TODAY = to_date.replace(tzinfo=tz)
-        else:
-            TODAY = to_date
-    else:
-        TODAY = datetime.now(tz)
+    today_date = datetime.now(tz)
+    if not to_date:
+        to_date = today_date
+
+    # add timezone awareness to allow date subtraction
+    to_date = add_timezone_info(to_date, tz)
 
     try:
-        today_diff = (datetime.now(tz) - TODAY).days
+        today_diff = (today_date - to_date).days
         past_date = dateparser.parse(str_days_ago)
         past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
@@ -380,6 +431,7 @@ list(split_dates_to_chunks("2018-01-01", "2018-01-04", 2, "%Y-%m-%d"))</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="keboola.utils.date.add_timezone_info" href="#keboola.utils.date.add_timezone_info">add_timezone_info</a></code></li>
 <li><code><a title="keboola.utils.date.get_past_date" href="#keboola.utils.date.get_past_date">get_past_date</a></code></li>
 <li><code><a title="keboola.utils.date.parse_datetime_interval" href="#keboola.utils.date.parse_datetime_interval">parse_datetime_interval</a></code></li>
 <li><code><a title="keboola.utils.date.split_dates_to_chunks" href="#keboola.utils.date.split_dates_to_chunks">split_dates_to_chunks</a></code></li>
