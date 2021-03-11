@@ -70,7 +70,7 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
 
     try:
         today_diff = (today_date - to_date).days
-        past_date = dateparser.parse(str_days_ago)git
+        past_date = dateparser.parse(str_days_ago)
         past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
         return date
