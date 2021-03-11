@@ -62,8 +62,9 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
 
     if to_date:
         if to_date.tzinfo is None:
-            to_date = to_date.replace(tzinfo=tz)
-        TODAY = to_date
+            TODAY = to_date.replace(tzinfo=tz)
+        else:
+            TODAY = to_date
     else:
         TODAY = datetime.now(tz)
 
