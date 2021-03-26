@@ -4,6 +4,7 @@
 
 ![Build & Test](https://github.com/keboola/python-utils/workflows/Build%20&%20Test/badge.svg?branch=main)
 [![Code Climate](https://codeclimate.com/github/keboola/python-utils/badges/gpa.svg)](https://codeclimate.com/github/keboola/python-utils)
+[![PyPI version](https://badge.fury.io/py/keboola.utils.svg)](https://badge.fury.io/py/keboola.utils)
 
 The library provides a useful set of utility functions frequently used when creating Python components for Keboola Connection. The utility library should be used in cooperation with the main [Python Component](https://github.com/keboola/python-component) library.
 
