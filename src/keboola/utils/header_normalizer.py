@@ -1,8 +1,8 @@
 import string
 import re
+from src.keboola.utils.char_encoder import CharEncoder
 from enum import Enum
 from typing import List, Tuple
-from src.keboola.utils.char_encoder import CharEncoder
 
 PERMITTED_CHARS = string.digits + string.ascii_letters + '_'
 PERMITTED_CHARS_KEY = "permitted_chars"
@@ -42,12 +42,7 @@ class HeaderNormalizer:
         dictionary where keys are characters to be substituted by their specific values
     """
 
-    class Strategies(Enum):
-        DEFAULT = "DEFAULT"
-        ENCODER = "ENCODER"
-        DICT = "DICT"
-
-    def __init__(self, strategy: Strategies, **params):
+    def __init__(self, **params):
         """
         Parameters
         ----------
@@ -79,30 +74,6 @@ class HeaderNormalizer:
             self.whitespace_sub = params[WHITESPACE_SUB_KEY]
         self.check_chars_permitted(self.whitespace_sub, self.permitted_chars)
 
-        if strategy == "DEFAULT":
-            self.non_permitted_sub = DEFAULT_NON_PERMITTED_SUB
-            if NON_PERMITTED_SUB_KEY in params:
-                self.check_chars_permitted(params[NON_PERMITTED_SUB_KEY], self.permitted_chars)
-                self.non_permitted_sub = params[NON_PERMITTED_SUB_KEY]
-            self.normalizer = self.normalize_header_with_sub
-
-        elif strategy == "ENCODER":
-            self.encode_delim = DEFAULT_ENCODE_DELIM
-            if ENCODE_DELIM_KEY in params:
-                self.check_chars_permitted(params[ENCODE_DELIM_KEY], self.permitted_chars)
-                self.encode_delim = params[ENCODE_DELIM_KEY]
-            self.encoder = DEFAULT_ENCODER
-            if ENCODER_KEY in params:
-                self.encoder = params[ENCODER_KEY]
-            self.normalizer = self.normalize_header_with_encoder
-
-        elif strategy == "DICT":
-            self.check_dict_permitted(params[REPLACE_DICT_KEY], self.permitted_chars)
-            self.replace_dict = params[REPLACE_DICT_KEY]
-            self.normalizer = self.normalize_header_with_dict
-        else:
-            raise ValueError(f"Strategy '{strategy}' is not supported")
-
     @staticmethod
     def check_chars_permitted(in_string: str, permitted_chars: str):
         """ Checks whether characters of a string are within a permitted characters string
@@ -123,37 +94,6 @@ class HeaderNormalizer:
             if char not in permitted_chars:
                 raise ValueError(f"Substitute: '{in_string}' not in permitted characters")
 
-    def check_dict_permitted(self, in_dict: dict, permitted_chars: str):
-        """ Checks whether characters of strings in a dictionary are within a permitted characters string
-
-            Parameters
-            ----------
-            in_dict : dict
-                A dictionary of strings to check
-
-            permitted_chars : str
-                A string of characters of permitted characters
-        """
-        for key in in_dict:
-            self.check_chars_permitted(in_dict[key], permitted_chars)
-
-    def normalize_header_with_sub(self, header: str) -> str:
-        """Normalizes a header using a substitute character
-
-            Parameters
-            ----------
-            header : str
-                A string containing a header
-
-            Returns
-            -------
-            header : str
-                A string containing the normalized header
-        """
-        header = self.replace_whitespace(header, self.whitespace_sub)
-        header = self.replace_not_permitted(header, self.permitted_chars, self.non_permitted_sub)
-        return header
-
     @staticmethod
     def replace_whitespace(in_string: str, substitute: str) -> str:
         """Replaces whitespaces with a substitute character
@@ -171,118 +111,6 @@ class HeaderNormalizer:
                 A string with replaced whitespaces by a substitute character
         """
         in_string = substitute.join(in_string.split())
-        return in_string
-
-    @staticmethod
-    def replace_not_permitted(in_string: str, permitted_chars: str, substitute: str) -> str:
-        """Replaces not permitted characters in a string with a substitute character
-
-            Parameters
-            ----------
-            in_string : str
-                A string in which not permitted characters should be replaced
-            permitted_chars : str
-                A string containing characters allowed in the output string
-            substitute : str
-                A character to replace not permitted characters
-
-            Returns
-            -------
-            in_string : str
-                A string with only permitted characters
-        """
-        in_string = re.sub("[^" + permitted_chars + "]", substitute, in_string)
-        return in_string
-
-    def normalize_header_with_encoder(self, header: str) -> str:
-        """Normalizes a header using an encoder
-
-            The encoded character is wrapped with a specific character.
-            For example a unicoded # with a encode_delim _ will result in _35_
-
-            Parameters
-            ----------
-            header : str
-                A string containing a header
-
-            Returns
-            -------
-            header : str
-                A string containing the normalized header
-        """
-        char_encoder = CharEncoder(self.encoder)
-        header = self.replace_whitespace(header, self.whitespace_sub)
-        header = self.encode_non_permitted_chars(header, char_encoder, self.permitted_chars, self.encode_delim)
-        return header
-
-    @staticmethod
-    def encode_non_permitted_chars(in_string: str, char_encoder: CharEncoder, permitted_chars: str,
-                                   encode_delim: str) -> str:
-        """Encodes not permitted characters in a string with an encoder
-
-            Parameters
-            ----------
-            in_string : str
-                A string in which not permitted characters should be encoded
-            char_encoder : CharEncoder
-                A function that encodes a string with an encoder
-            permitted_chars : str
-                A string containing characters allowed in the output string
-            encode_delim : str
-                A character to wrap the encoded character
-
-            Returns
-            -------
-            in_string : str
-                A string containing encoded not permitted characters
-        """
-        in_string = list(in_string)
-        for i, char in enumerate(in_string):
-            if char not in permitted_chars:
-                in_string[i] = encode_delim + str(char_encoder.encode_char(char)) + encode_delim
-        return "".join(in_string)
-
-    def normalize_header_with_dict(self, header: str) -> str:
-        """Normalizes a header using a dictionary
-
-            The dictionary contains a key representing the character to be replaced and a value which
-            is used to replace the key character
-
-            Parameters
-            ----------
-            header : str
-                A string containing a header
-
-            Returns
-            -------
-            header : str
-                A string containing the normalized header
-        """
-        header = self.replace_chars_using_dict(header, self.replace_dict)
-        header = self.replace_whitespace(header, self.whitespace_sub)
-        return header
-
-    @staticmethod
-    def replace_chars_using_dict(in_string: str, replace_dict: dict) -> str:
-        """Replaces characters in a string using a dictionaty
-
-            The dictionary contains a key representing the character to be replaced and a value which
-            is used to replace the key character
-
-            Parameters
-            ----------
-            in_string : str
-                A string containing characters to be replaced using a dictionary
-            replace_dict : dict
-                A dictionary where keys are characters to be substituted by their specific values
-
-            Returns
-            -------
-            in_string : str
-                A string which has had characters replaced using a dictionary
-        """
-        for key in replace_dict:
-            in_string = in_string.replace(key, replace_dict[key])
         return in_string
 
     def normalize_headers(self, header: List[str]) -> List[str]:
@@ -337,3 +165,200 @@ class HeaderNormalizer:
             header = "empty_header_" + str(empty_header_id)
             empty_header_id += 1
         return header, empty_header_id
+
+
+class DefaultHeaderNormalizer(HeaderNormalizer):
+    def __init__(self, **params):
+        HeaderNormalizer.__init__(self, **params)
+
+        self.non_permitted_sub = DEFAULT_NON_PERMITTED_SUB
+        if NON_PERMITTED_SUB_KEY in params:
+            self.check_chars_permitted(params[NON_PERMITTED_SUB_KEY], self.permitted_chars)
+            self.non_permitted_sub = params[NON_PERMITTED_SUB_KEY]
+
+        self.normalizer = self.normalize_header_with_sub
+
+    def normalize_header_with_sub(self, header: str) -> str:
+        """Normalizes a header using a substitute character
+
+            Parameters
+            ----------
+            header : str
+                A string containing a header
+
+            Returns
+            -------
+            header : str
+                A string containing the normalized header
+        """
+        header = self.replace_whitespace(header, self.whitespace_sub)
+        header = self.replace_not_permitted(header, self.permitted_chars, self.non_permitted_sub)
+        return header
+
+    @staticmethod
+    def replace_not_permitted(in_string: str, permitted_chars: str, substitute: str) -> str:
+        """Replaces not permitted characters in a string with a substitute character
+
+            Parameters
+            ----------
+            in_string : str
+                A string in which not permitted characters should be replaced
+            permitted_chars : str
+                A string containing characters allowed in the output string
+            substitute : str
+                A character to replace not permitted characters
+
+            Returns
+            -------
+            in_string : str
+                A string with only permitted characters
+        """
+        in_string = re.sub("[^" + permitted_chars + "]", substitute, in_string)
+        return in_string
+
+
+class EncoderHeaderNormalizer(HeaderNormalizer):
+    def __init__(self, **params):
+        HeaderNormalizer.__init__(self, **params)
+
+        self.encode_delim = DEFAULT_ENCODE_DELIM
+        if ENCODE_DELIM_KEY in params:
+            self.check_chars_permitted(params[ENCODE_DELIM_KEY], self.permitted_chars)
+            self.encode_delim = params[ENCODE_DELIM_KEY]
+        self.encoder = DEFAULT_ENCODER
+        if ENCODER_KEY in params:
+            self.encoder = params[ENCODER_KEY]
+        self.normalizer = self.normalize_header_with_encoder
+
+    def normalize_header_with_encoder(self, header: str) -> str:
+        """Normalizes a header using an encoder
+
+            The encoded character is wrapped with a specific character.
+            For example a unicoded # with a encode_delim _ will result in _35_
+
+            Parameters
+            ----------
+            header : str
+                A string containing a header
+
+            Returns
+            -------
+            header : str
+                A string containing the normalized header
+        """
+        char_encoder = CharEncoder(self.encoder)
+        header = self.replace_whitespace(header, self.whitespace_sub)
+        header = self.encode_non_permitted_chars(header, char_encoder, self.permitted_chars, self.encode_delim)
+        return header
+
+    @staticmethod
+    def encode_non_permitted_chars(in_string: str, char_encoder: CharEncoder, permitted_chars: str,
+                                   encode_delim: str) -> str:
+        """Encodes not permitted characters in a string with an encoder
+
+            Parameters
+            ----------
+            in_string : str
+                A string in which not permitted characters should be encoded
+            char_encoder : CharEncoder
+                A function that encodes a string with an encoder
+            permitted_chars : str
+                A string containing characters allowed in the output string
+            encode_delim : str
+                A character to wrap the encoded character
+
+            Returns
+            -------
+            in_string : str
+                A string containing encoded not permitted characters
+        """
+        in_string = list(in_string)
+        for i, char in enumerate(in_string):
+            if char not in permitted_chars:
+                in_string[i] = encode_delim + str(char_encoder.encode_char(char)) + encode_delim
+        return "".join(in_string)
+
+
+class DictHeaderNormalizer(HeaderNormalizer):
+    def __init__(self, **params):
+        HeaderNormalizer.__init__(self, **params)
+
+        self.check_dict_permitted(params[REPLACE_DICT_KEY], self.permitted_chars)
+        self.replace_dict = params[REPLACE_DICT_KEY]
+        self.normalizer = self.normalize_header_with_dict
+
+    def normalize_header_with_dict(self, header: str) -> str:
+        """Normalizes a header using a dictionary
+
+            The dictionary contains a key representing the character to be replaced and a value which
+            is used to replace the key character
+
+            Parameters
+            ----------
+            header : str
+                A string containing a header
+
+            Returns
+            -------
+            header : str
+                A string containing the normalized header
+        """
+        header = self.replace_chars_using_dict(header, self.replace_dict)
+        header = self.replace_whitespace(header, self.whitespace_sub)
+        return header
+
+    @staticmethod
+    def replace_chars_using_dict(in_string: str, replace_dict: dict) -> str:
+        """Replaces characters in a string using a dictionaty
+
+            The dictionary contains a key representing the character to be replaced and a value which
+            is used to replace the key character
+
+            Parameters
+            ----------
+            in_string : str
+                A string containing characters to be replaced using a dictionary
+            replace_dict : dict
+                A dictionary where keys are characters to be substituted by their specific values
+
+            Returns
+            -------
+            in_string : str
+                A string which has had characters replaced using a dictionary
+        """
+        for key in replace_dict:
+            in_string = in_string.replace(key, replace_dict[key])
+        return in_string
+
+    def check_dict_permitted(self, in_dict: dict, permitted_chars: str):
+        """ Checks whether characters of strings in a dictionary are within a permitted characters string
+
+            Parameters
+            ----------
+            in_dict : dict
+                A dictionary of strings to check
+
+            permitted_chars : str
+                A string of characters of permitted characters
+        """
+        for key in in_dict:
+            self.check_chars_permitted(in_dict[key], permitted_chars)
+
+
+class Strategies(Enum):
+    DEFAULT = "DEFAULT"
+    ENCODER = "ENCODER"
+    DICT = "DICT"
+
+
+def get_normalizer(strategy: Strategies, **params):
+    if strategy == "DEFAULT":
+        return DefaultHeaderNormalizer(**params)
+
+    elif strategy == "ENCODER":
+        return EncoderHeaderNormalizer(**params)
+
+    elif strategy == "DICT":
+        return DictHeaderNormalizer(**params)
+    else:
+        raise ValueError(f"Strategy '{strategy}' is not supported")
