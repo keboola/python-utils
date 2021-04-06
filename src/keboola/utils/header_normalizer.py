@@ -1,6 +1,6 @@
 import string
 import re
-from src.keboola.utils.char_encoder import CharEncoder
+from keboola.utils.char_encoder import CharEncoder
 from enum import Enum
 from typing import List, Tuple
 
@@ -20,50 +20,26 @@ DEFAULT_ENCODER = "unicode"
 
 class HeaderNormalizer:
     """
-    A class used to noramlize headers
+    A class used to normalize headers
 
     ...
 
     Attributes
     ----------
-    normalizer : fnc
-        function used to normalize headers with a specific strategy
     permitted_chars : str
         all characters that are permitted to be in a header concatenated together in one string
-    non_permitted_sub : str
-        substitute character for a non permitted character
-    non_permitted_encoder : str
-        type of encoding to be used for encoding non-permitted characters
-    encode_delim : str
-        character to put before and after an encoded character
     whitespace_sub : str
         character to substitute a whitespace
-    replace_dict : dict
-        dictionary where keys are characters to be substituted by their specific values
     """
 
     def __init__(self, **params):
         """
-        Parameters
-        ----------
-        strategy: Strategies
-            strategy to be used for normalizing headers
-
-
         Keyword Arguments
         ----------
         permitted_chars : str
             all characters that are permitted to be in a header concatenated together in one string
-        non_permitted_sub : str
-            substitute character for a non permitted character
-        non_permitted_encoder : str
-            type of encoding to be used for encoding non-permitted characters
-        encode_delim : str
-            character to put before and after an encoded character
         whitespace_sub : str
             character to substitute a whitespace
-        replace_dict : dict
-            dictionary where keys are characters to be substituted by their specific values
         """
         self.permitted_chars = PERMITTED_CHARS
         if PERMITTED_CHARS_KEY in params:
@@ -103,7 +79,7 @@ class HeaderNormalizer:
             in_string : str
                 A string whose whitespaces should be replaced by a substitute character
             substitute : str
-                A character to replace whitesaces
+                A character to replace whitespaces
 
             Returns
             -------
@@ -168,7 +144,31 @@ class HeaderNormalizer:
 
 
 class DefaultHeaderNormalizer(HeaderNormalizer):
+    """
+    A class used to normalize headers using a substitute character
+
+    ...
+
+    Attributes
+    ----------
+    permitted_chars : str
+        all characters that are permitted to be in a header concatenated together in one string
+    non_permitted_sub : str
+        substitute character for a non permitted character
+    whitespace_sub : str
+        character to substitute a whitespace
+    """
     def __init__(self, **params):
+        """
+        Keyword Arguments
+        ----------
+        permitted_chars : str
+            all characters that are permitted to be in a header concatenated together in one string
+        non_permitted_sub : str
+            substitute character for a non permitted character
+        whitespace_sub : str
+            character to substitute a whitespace
+        """
         HeaderNormalizer.__init__(self, **params)
 
         self.non_permitted_sub = DEFAULT_NON_PERMITTED_SUB
@@ -218,7 +218,35 @@ class DefaultHeaderNormalizer(HeaderNormalizer):
 
 
 class EncoderHeaderNormalizer(HeaderNormalizer):
+    """
+    A class used to normalize headers using a character encoder
+
+    ...
+
+    Attributes
+    ----------
+    permitted_chars : str
+        all characters that are permitted to be in a header concatenated together in one string
+    non_permitted_encoder : str
+        type of encoding to be used for encoding non-permitted characters
+    encode_delim : str
+            character to put before and after an encoded character
+    whitespace_sub : str
+        character to substitute a whitespace
+    """
     def __init__(self, **params):
+        """
+        Keyword Arguments
+        ----------
+        permitted_chars : str
+            all characters that are permitted to be in a header concatenated together in one string
+        non_permitted_encoder : str
+            type of encoding to be used for encoding non-permitted characters
+        encode_delim : str
+            character to put before and after an encoded character
+        whitespace_sub : str
+            character to substitute a whitespace
+        """
         HeaderNormalizer.__init__(self, **params)
 
         self.encode_delim = DEFAULT_ENCODE_DELIM
@@ -280,7 +308,31 @@ class EncoderHeaderNormalizer(HeaderNormalizer):
 
 
 class DictHeaderNormalizer(HeaderNormalizer):
+    """"
+    A class used to normalize headers using a dictionary to replace characters
+
+    ...
+
+    Attributes
+    ----------
+    permitted_chars : str
+        all characters that are permitted to be in a header concatenated together in one string
+    whitespace_sub : str
+        character to substitute a whitespace
+    replace_dict : dict
+        dictionary where keys are characters to be substituted by their specific values
+    """
     def __init__(self, **params):
+        """
+        Keyword Arguments
+        ----------
+        permitted_chars : str
+            all characters that are permitted to be in a header concatenated together in one string
+        whitespace_sub : str
+            character to substitute a whitespace
+        replace_dict : dict
+            dictionary where keys are characters to be substituted by their specific values
+        """
         HeaderNormalizer.__init__(self, **params)
 
         self.check_dict_permitted(params[REPLACE_DICT_KEY], self.permitted_chars)
@@ -309,7 +361,7 @@ class DictHeaderNormalizer(HeaderNormalizer):
 
     @staticmethod
     def replace_chars_using_dict(in_string: str, replace_dict: dict) -> str:
-        """Replaces characters in a string using a dictionaty
+        """Replaces characters in a string using a dictionary
 
             The dictionary contains a key representing the character to be replaced and a value which
             is used to replace the key character
@@ -346,12 +398,33 @@ class DictHeaderNormalizer(HeaderNormalizer):
 
 
 class Strategies(Enum):
+    """"
+        Enumerator for header normalization strategies
+
+        ...
+
+        Strategies
+        ----------
+        DEFAULT :
+            Normalize headers using a substitute character
+        ENCODER :
+            Normalize headers using a character encoder
+        DICT :
+            Normalize headers using a dictionary to replace characters
+        """
     DEFAULT = "DEFAULT"
     ENCODER = "ENCODER"
     DICT = "DICT"
 
 
-def get_normalizer(strategy: Strategies, **params):
+def get_normalizer(strategy: Strategies, **params) -> HeaderNormalizer:
+    """ Factory method to initialize a header normalizer with various strategies
+
+        Parameters
+        ----------
+        strategy : Strategies
+            A strategy type
+    """
     if strategy == "DEFAULT":
         return DefaultHeaderNormalizer(**params)
 
