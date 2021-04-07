@@ -22,32 +22,19 @@ class HeaderNormalizer:
     """
     A class used to normalize headers
 
-    ...
-
-    Attributes
-    ----------
-    permitted_chars : str
-        all characters that are permitted to be in a header concatenated together in one string
-    whitespace_sub : str
-        character to substitute a whitespace
     """
 
-    def __init__(self, **params):
+    def __init__(self, permitted_chars: str = PERMITTED_CHARS, whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
-        Keyword Arguments
+        Arguments
         ----------
         permitted_chars : str
             all characters that are permitted to be in a header concatenated together in one string
         whitespace_sub : str
             character to substitute a whitespace
         """
-        self.permitted_chars = PERMITTED_CHARS
-        if PERMITTED_CHARS_KEY in params:
-            self.permitted_chars = params[PERMITTED_CHARS_KEY]
-
-        self.whitespace_sub = DEFAULT_WHITESPACE_SUB
-        if WHITESPACE_SUB_KEY in params:
-            self.whitespace_sub = params[WHITESPACE_SUB_KEY]
+        self.permitted_chars = permitted_chars
+        self.whitespace_sub = whitespace_sub
         self.check_chars_permitted(self.whitespace_sub, self.permitted_chars)
 
     @staticmethod
@@ -146,21 +133,12 @@ class HeaderNormalizer:
 class DefaultHeaderNormalizer(HeaderNormalizer):
     """
     A class used to normalize headers using a substitute character
-
-    ...
-
-    Attributes
-    ----------
-    permitted_chars : str
-        all characters that are permitted to be in a header concatenated together in one string
-    non_permitted_sub : str
-        substitute character for a non permitted character
-    whitespace_sub : str
-        character to substitute a whitespace
     """
-    def __init__(self, **params):
+
+    def __init__(self, permitted_chars: str = PERMITTED_CHARS, non_permitted_sub: str = DEFAULT_NON_PERMITTED_SUB,
+                 whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
-        Keyword Arguments
+        Arguments
         ----------
         permitted_chars : str
             all characters that are permitted to be in a header concatenated together in one string
@@ -169,13 +147,10 @@ class DefaultHeaderNormalizer(HeaderNormalizer):
         whitespace_sub : str
             character to substitute a whitespace
         """
-        HeaderNormalizer.__init__(self, **params)
+        HeaderNormalizer.__init__(self, permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
-        self.non_permitted_sub = DEFAULT_NON_PERMITTED_SUB
-        if NON_PERMITTED_SUB_KEY in params:
-            self.check_chars_permitted(params[NON_PERMITTED_SUB_KEY], self.permitted_chars)
-            self.non_permitted_sub = params[NON_PERMITTED_SUB_KEY]
-
+        self.non_permitted_sub = non_permitted_sub
+        self.check_chars_permitted(non_permitted_sub, permitted_chars)
         self.normalizer = self.normalize_header_with_sub
 
     def normalize_header_with_sub(self, header: str) -> str:
@@ -221,41 +196,27 @@ class EncoderHeaderNormalizer(HeaderNormalizer):
     """
     A class used to normalize headers using a character encoder
 
-    ...
-
-    Attributes
-    ----------
-    permitted_chars : str
-        all characters that are permitted to be in a header concatenated together in one string
-    non_permitted_encoder : str
-        type of encoding to be used for encoding non-permitted characters
-    encode_delim : str
-            character to put before and after an encoded character
-    whitespace_sub : str
-        character to substitute a whitespace
     """
-    def __init__(self, **params):
+
+    def __init__(self, permitted_chars: str = PERMITTED_CHARS, char_encoder: str = DEFAULT_ENCODER,
+                 encode_delim:str=DEFAULT_ENCODE_DELIM, whitespace_sub:str = DEFAULT_WHITESPACE_SUB):
         """
-        Keyword Arguments
+        Arguments
         ----------
         permitted_chars : str
             all characters that are permitted to be in a header concatenated together in one string
-        non_permitted_encoder : str
+        char_encoder : str
             type of encoding to be used for encoding non-permitted characters
         encode_delim : str
             character to put before and after an encoded character
         whitespace_sub : str
             character to substitute a whitespace
         """
-        HeaderNormalizer.__init__(self, **params)
+        HeaderNormalizer.__init__(self, permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
-        self.encode_delim = DEFAULT_ENCODE_DELIM
-        if ENCODE_DELIM_KEY in params:
-            self.check_chars_permitted(params[ENCODE_DELIM_KEY], self.permitted_chars)
-            self.encode_delim = params[ENCODE_DELIM_KEY]
-        self.encoder = DEFAULT_ENCODER
-        if ENCODER_KEY in params:
-            self.encoder = params[ENCODER_KEY]
+        self.encode_delim = encode_delim
+        self.check_chars_permitted(encode_delim, permitted_chars)
+        self.char_encoder = char_encoder
         self.normalizer = self.normalize_header_with_encoder
 
     def normalize_header_with_encoder(self, header: str) -> str:
@@ -274,7 +235,7 @@ class EncoderHeaderNormalizer(HeaderNormalizer):
             header : str
                 A string containing the normalized header
         """
-        char_encoder = CharEncoder(self.encoder)
+        char_encoder = CharEncoder(self.char_encoder)
         header = self.replace_whitespace(header, self.whitespace_sub)
         header = self.encode_non_permitted_chars(header, char_encoder, self.permitted_chars, self.encode_delim)
         return header
@@ -310,21 +271,12 @@ class EncoderHeaderNormalizer(HeaderNormalizer):
 class DictHeaderNormalizer(HeaderNormalizer):
     """"
     A class used to normalize headers using a dictionary to replace characters
-
-    ...
-
-    Attributes
-    ----------
-    permitted_chars : str
-        all characters that are permitted to be in a header concatenated together in one string
-    whitespace_sub : str
-        character to substitute a whitespace
-    replace_dict : dict
-        dictionary where keys are characters to be substituted by their specific values
     """
-    def __init__(self, **params):
+
+    def __init__(self, permitted_chars: str = PERMITTED_CHARS, whitespace_sub:str = DEFAULT_WHITESPACE_SUB,
+                 replace_dict : dict={}):
         """
-        Keyword Arguments
+        Arguments
         ----------
         permitted_chars : str
             all characters that are permitted to be in a header concatenated together in one string
@@ -333,10 +285,10 @@ class DictHeaderNormalizer(HeaderNormalizer):
         replace_dict : dict
             dictionary where keys are characters to be substituted by their specific values
         """
-        HeaderNormalizer.__init__(self, **params)
+        HeaderNormalizer.__init__(self, permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
-        self.check_dict_permitted(params[REPLACE_DICT_KEY], self.permitted_chars)
-        self.replace_dict = params[REPLACE_DICT_KEY]
+        self.replace_dict = replace_dict
+        self.check_dict_permitted(replace_dict, permitted_chars)
         self.normalizer = self.normalize_header_with_dict
 
     def normalize_header_with_dict(self, header: str) -> str:
