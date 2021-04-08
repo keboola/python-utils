@@ -11,16 +11,16 @@ import re
 import string
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
-from keboola.utils.char_encoder import CharEncoder, SupportedEncoder
+from .char_encoder import CharEncoder, SupportedEncoder
 
 PERMITTED_CHARS = string.digits + string.ascii_letters + '_'
 
 DEFAULT_WHITESPACE_SUB = "_"
 DEFAULT_NON_PERMITTED_SUB = ""
 DEFAULT_ENCODE_DELIM = "_"
-DEFAULT_ENCODER = "unicode"
+DEFAULT_ENCODER = SupportedEncoder.unicode
 
 
 class HeaderNormalizer(ABC):
@@ -132,7 +132,7 @@ class HeaderNormalizer(ABC):
 
 class DefaultHeaderNormalizer(HeaderNormalizer):
     """
-    A class used to normalize headers using a substitute character
+        A class used to normalize headers using a substitute character
     """
 
     def __init__(self, permitted_chars: str = PERMITTED_CHARS, forbidden_sub: str = DEFAULT_NON_PERMITTED_SUB,
@@ -172,12 +172,15 @@ class DefaultHeaderNormalizer(HeaderNormalizer):
 
 class EncoderHeaderNormalizer(HeaderNormalizer):
     """
-    Header normalizer using a character encoder
+    Normalize headers by encoding character in utf8 or unicode. This enables unique mapping back
+    to the original values. e.g. `a#` -> `a_35_`
+
 
     """
 
-    def __init__(self, permitted_chars: str = PERMITTED_CHARS, char_encoder: SupportedEncoder = DEFAULT_ENCODER,
-                 encode_delimiter: str = DEFAULT_ENCODE_DELIM, whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
+    def __init__(self, char_encoder: Union[SupportedEncoder, str] = DEFAULT_ENCODER,
+                 encode_delimiter: str = DEFAULT_ENCODE_DELIM,
+                 permitted_chars: str = PERMITTED_CHARS, whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
 
         Args:
@@ -195,10 +198,10 @@ class EncoderHeaderNormalizer(HeaderNormalizer):
     def _normalize_column_name(self, column_name: str) -> str:
 
         new_column_name = self._replace_whitespace(column_name)
-        new_column_name = self.encode_non_permitted_chars(new_column_name)
+        new_column_name = self._encode_non_permitted_chars(new_column_name)
         return new_column_name
 
-    def encode_non_permitted_chars(self, in_string: str) -> str:
+    def _encode_non_permitted_chars(self, in_string: str) -> str:
 
         column_characters = list(in_string)
         for i, char in enumerate(column_characters):
@@ -210,21 +213,21 @@ class EncoderHeaderNormalizer(HeaderNormalizer):
 
 class DictHeaderNormalizer(HeaderNormalizer):
     """"
-    A class used to normalize headers using a dictionary to replace characters
+        A class used to normalize headers using a dictionary to replace characters.
+     e.g. `{"#":"hsh"}`
     """
 
     def __init__(self, replace_dict: dict, permitted_chars: str = PERMITTED_CHARS,
                  whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
-        Arguments
-        ----------
-        permitted_chars : str
-            all characters that are permitted to be in a column concatenated together in one string
-        whitespace_sub : str
-            character to substitute a whitespace
-        replace_dict : dict
-            dictionary where keys are characters to be substituted by their specific values
+
+        Args:
+            replace_dict: The dictionary contains a key representing the character to be replaced and a value which
+                is used to replace the key character.
+            permitted_chars:
+            whitespace_sub:
         """
+
         super().__init__(permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
         self.replace_dict = replace_dict
@@ -232,28 +235,24 @@ class DictHeaderNormalizer(HeaderNormalizer):
 
     def _normalize_column_name(self, column_name: str) -> str:
 
-        new_column_name = self.replace_chars_using_dict(column_name, self.replace_dict)
+        new_column_name = self._replace_chars_using_dict(column_name, self.replace_dict)
         return new_column_name
 
     @staticmethod
-    def replace_chars_using_dict(in_string: str, replace_dict: dict) -> str:
-        """Replaces characters in a string using a dictionary
+    def _replace_chars_using_dict(in_string: str, replace_dict: dict) -> str:
+        """
+        Replaces characters in a string using a dictionary
 
-            The dictionary contains a key representing the character to be replaced and a value which
-            is used to replace the key character
-
-            Parameters
-            ----------
+        Args:
             in_string : str
                 A string containing characters to be replaced using a dictionary
             replace_dict : dict
                 A dictionary where keys are characters to be substituted by their specific values
 
-            Returns
-            -------
-            in_string : str
-                A string which has had characters replaced using a dictionary
+        Returns:
+
         """
+
         for key in replace_dict:
             in_string = in_string.replace(key, replace_dict[key])
         return in_string
@@ -288,13 +287,32 @@ class NormalizerStrategy(Enum):
 
 
 def get_normalizer(strategy: NormalizerStrategy, **params) -> HeaderNormalizer:
-    """ Factory method to initialize a column normalizer with various strategies
-
-        Parameters
-        ----------
-        strategy : NormalizerStrategy
-            A strategy type
     """
+
+    Factory method to initialize a column normalizer with various strategies:
+
+        DEFAULT :
+            Normalize headers using a substitute character
+
+        ENCODER :
+            Normalize headers by encoding character in utf8 or unicode. This enables unique mapping back
+             to the original values. e.g. `a#` -> `a_35_`
+
+                 params:
+                    `char_encoder: SupportedEncoder = DEFAULT_ENCODER, encode_delimiter: str = DEFAULT_ENCODE_DELIM`
+        DICT :
+            Specify a dictionary with character replacements. e.g. {"#":"hsh"}
+
+                params:
+                `replace_dict`
+    Args:
+        strategy:
+        **params:
+
+    Returns: HeaderNormalizer
+
+    """
+
     if strategy == NormalizerStrategy.DEFAULT:
         return DefaultHeaderNormalizer(**params)
 

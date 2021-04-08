@@ -32,6 +32,14 @@ pip install keboola.utils
 The package currently contains one core module:
 
 - `keboola.utils.date` - a set of methods for date manipulation.
+- [`keboola.utils.helpers`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/keboola/python-utils/main/docs/api-html/utils/helpers.html)  
+  - a general helper functions and classes that are relevant in Keboola Connection environment.
+- [`keboola.utils.header_normalizer`](https://htmlpreview.github.io/?https://raw.githubusercontent.com/keboola/python-utils/main/docs/api-html/utils/header_normalizer.html) 
+  - Different strategies to convert column names to a valid KBC format.
+
+### Helpers
+
+The module contains general helper functions and classes that are relevant in Keboola Connection environment.
 
 ### Date Utilities
 
@@ -102,4 +110,26 @@ intervals = dutils.split_dates_to_chunks(start_date, end_date, intv=2, strformat
 
 for intv in intervals:
     print(intv['start_date'], intv['end_date'])
+```
+
+
+### Header normalizer
+
+This module provides different strategies to normalize CSV column names
+to a format supported by the [Keboola Connection Storage](https://help.keboola.com/):
+
+`Only alphanumeric characters and underscores are allowed in column name.
+Underscore is not allowed on the beginning.`
+
+
+**Example:**
+
+```python
+import keboola.utils.header_normalizer as hnorm
+
+head_norm = hnorm.get_normalizer(strategy=hnorm.NormalizerStrategy.ENCODER, char_encoder="unicode")
+header = ["dactor#fd", "a*ruas$", "48DHBb#@"]
+norm_headers = head_norm.normalize_header(header)
+        
+# Results in: ['dactor_35_fd', 'a_42_ruas_36_', '48DHBb_35__64_'])
 ```
