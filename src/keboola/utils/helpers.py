@@ -1,4 +1,57 @@
-from typing import List
+from enum import Enum
+from typing import List, Union
+
+
+class ValidatingEnum(Enum):
+
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.name, cls))
+
+    @classmethod
+    def validate_fields(cls, fields: List[Union[Enum, str]]):
+        errors = []
+        for f in fields:
+            valid, error = cls.validate_field(f)
+            if error:
+                errors.append(error)
+        if errors:
+            raise ValueError(
+                ', '.join(errors) + f'\n Supported {cls.__name__} values are: [{cls.list()}]')
+
+    @classmethod
+    def validate_field(cls, field: Union[Enum, str]):
+        error = ''
+        valid = True
+        if isinstance(field, cls):
+            pass
+        elif isinstance(field, str):
+            if field not in cls.list():
+                error = f'"{field}" is not valid {cls.__name__} value!'
+                valid = False
+        else:
+            error = f'"{field}" is not valid Enum {cls.__name__} type!'
+            valid = False
+
+        return valid, error
+
+    @classmethod
+    def get_by_name(cls, name: Union[Enum, str]):
+        instance = None
+        if isinstance(name, cls):
+            instance = name
+        elif isinstance(name, str) and name in cls.list():
+            instance = cls.__get_instance_by_name(name)
+        else:
+            raise TypeError(f'"{name}" is not valid {cls.__name__} name or instance!')
+
+        return instance
+
+    @classmethod
+    def __get_instance_by_name(cls, name: str):
+        for inst in cls:
+            if name == inst.name:
+                return inst
 
 
 def comma_separated_values_to_list(csv_string: str) -> List:

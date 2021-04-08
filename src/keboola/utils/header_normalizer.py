@@ -1,14 +1,25 @@
-import string
+"""
+This module provides different strategies to normalize CSV column names
+to a format supported by the [Keboola Connection Storage](https://help.keboola.com/):
+
+`Only alphanumeric characters and underscores are allowed in column name.
+Underscore is not allowed on the beginning.`
+
+"""
+
 import re
-from keboola.utils.char_encoder import CharEncoder
+import string
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List, Tuple
+
+from keboola.utils.char_encoder import CharEncoder, SupportedEncoder
 
 PERMITTED_CHARS = string.digits + string.ascii_letters + '_'
 PERMITTED_CHARS_KEY = "permitted_chars"
 WHITESPACE_SUB_KEY = "whitespace_sub"
-NON_PERMITTED_SUB_KEY = "non_permitted_sub"
-ENCODE_DELIM_KEY = "encode_delim"
+NON_PERMITTED_SUB_KEY = "forbidden_sub"
+ENCODE_DELIM_KEY = "encode_delimiter"
 ENCODER_KEY = "encoder"
 REPLACE_DICT_KEY = "replace_dict"
 
@@ -18,116 +29,111 @@ DEFAULT_ENCODE_DELIM = "_"
 DEFAULT_ENCODER = "unicode"
 
 
-class HeaderNormalizer:
+class HeaderNormalizer(ABC):
     """
-    A class used to normalize headers
+    Abstract class for column normalization.
 
     """
 
     def __init__(self, permitted_chars: str = PERMITTED_CHARS, whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
-        Arguments
-        ----------
-        permitted_chars : str
-            all characters that are permitted to be in a header concatenated together in one string
-        whitespace_sub : str
-            character to substitute a whitespace
+
+        Args:
+            permitted_chars: all characters that are permitted to be in a column concatenated together in one string
+            whitespace_sub: character to substitute a whitespace
         """
+
         self.permitted_chars = permitted_chars
         self.whitespace_sub = whitespace_sub
-        self.check_chars_permitted(self.whitespace_sub, self.permitted_chars)
+        self._check_chars_permitted(self.whitespace_sub)
 
-    @staticmethod
-    def check_chars_permitted(in_string: str, permitted_chars: str):
-        """ Checks whether characters of a string are within a permitted characters string
+    @abstractmethod
+    def _normalize_column_name(self, column_name: str):
+        pass
 
-            Parameters
-            ----------
-            in_string : str
-                A string of characters to check
-            permitted_chars : str
-                A string of characters of permitted characters
+    def _check_chars_permitted(self, in_string: str):
+        """
+        Checks whether characters of a string are within a permitted characters string
 
-            Raises
-            -------
+        Args:
+            in_string: Input string
+
+        Returns:
+
+        Raises:
             ValueError
                 If string contains characters that are not permitted
+
         """
+
         for char in in_string:
-            if char not in permitted_chars:
+            if char not in self.permitted_chars:
                 raise ValueError(f"Substitute: '{in_string}' not in permitted characters")
 
-    @staticmethod
-    def replace_whitespace(in_string: str, substitute: str) -> str:
-        """Replaces whitespaces with a substitute character
+    def _replace_whitespace(self, in_string: str) -> str:
+        """
+        Replaces whitespaces with a substitute character
+        Args:
+            in_string:
 
-            Parameters
-            ----------
-            in_string : str
-                A string whose whitespaces should be replaced by a substitute character
-            substitute : str
-                A character to replace whitespaces
-
-            Returns
-            -------
+        Returns:
             in_string : str
                 A string with replaced whitespaces by a substitute character
+
         """
-        in_string = substitute.join(in_string.split())
+        in_string = self.whitespace_sub.join(in_string.split())
         return in_string
 
-    def normalize_headers(self, header: List[str]) -> List[str]:
-        """Normalizes a list of headers
+    def normalize_header(self, header: List[str]) -> List[str]:
+        """
+        Normalizes a list of columns to match the Keboola Connection Storage requirements:
 
-        Function normalizes using the initialized normalizer function.
+        `Only alphanumeric characters and underscores are allowed in column name.
+         Underscore is not allowed on the beginning.`
+
         It also checks for empty headers and adds a name to them so they do not remain empty
 
-        Parameters
-        ----------
-        header : List[str]
-            A list of headers
+        Args:
+            header:
 
-        Returns
-        -------
-        normalized_headers : List[str]
-            A list of normalized headers
+        Returns:
+            Normalized column.
+
         """
-        normalized_headers = []
-        empty_header_id = 1
 
-        for h in header:
-            h = self.normalizer(h)
-            h, empty_header_id = self._check_empty_header(h, empty_header_id)
-            normalized_headers.append(h)
-        return normalized_headers
+        normalized_header = []
+        empty_column_id = 1
+
+        for column in header:
+            column = self._normalize_column_name(column)
+            column, empty_column_id = self._check_empty_column(column, empty_column_id)
+            normalized_header.append(column)
+        return normalized_header
 
     @staticmethod
-    def _check_empty_header(header: str, empty_header_id: int) -> Tuple[str, int]:
-        """Checks if header is empty and fills it in
+    def _check_empty_column(column: str, empty_column_id: int) -> Tuple[str, int]:
+        """
+        Checks if header is empty and fills it in
 
         Headers are checked if the string is empty, and if it is a new name is given.
         If the header contains more than 0 characters it will be returned.
         Each new name is appended a number, this number is increased and return as well if the
         header is empty.
 
-        Parameters
-        ----------
-        header : str
-            A string containing a header
-        empty_header_id : int
-            An integer containg a number to be appended to the new name of an empty header
+        Args:
+            column:
+            empty_column_id: An integer contaning a number to be appended to the new name of an empty header
 
-        Returns
-        -------
-        header : str
-            The new name of an empty header
-        empty_header_id : int
-            An integer holding the id of the next empty header string
+        Returns:
+            column (str): The new name of an empty column
+            empty_header_id (int) : An integer holding the id of the next empty column string
+
         """
-        if not header:
-            header = "empty_header_" + str(empty_header_id)
-            empty_header_id += 1
-        return header, empty_header_id
+
+        if not column:
+            column = f"empty_{str(empty_column_id)}"
+            empty_column_id += 1
+        return column, empty_column_id
 
 
 class DefaultHeaderNormalizer(HeaderNormalizer):
@@ -135,137 +141,77 @@ class DefaultHeaderNormalizer(HeaderNormalizer):
     A class used to normalize headers using a substitute character
     """
 
-    def __init__(self, permitted_chars: str = PERMITTED_CHARS, non_permitted_sub: str = DEFAULT_NON_PERMITTED_SUB,
+    def __init__(self, permitted_chars: str = PERMITTED_CHARS, forbidden_sub: str = DEFAULT_NON_PERMITTED_SUB,
                  whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
-        Arguments
-        ----------
-        permitted_chars : str
-            all characters that are permitted to be in a header concatenated together in one string
-        non_permitted_sub : str
-            substitute character for a non permitted character
-        whitespace_sub : str
-            character to substitute a whitespace
+
+        Args:
+            permitted_chars: all characters that are permitted to be in a column concatenated together in one string
+            forbidden_sub: substitute character for a forbidden character
+            whitespace_sub: character to substitute a whitespace
         """
-        HeaderNormalizer.__init__(self, permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
-        self.non_permitted_sub = non_permitted_sub
-        self.check_chars_permitted(non_permitted_sub, permitted_chars)
-        self.normalizer = self.normalize_header_with_sub
+        super().__init__(permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
-    def normalize_header_with_sub(self, header: str) -> str:
-        """Normalizes a header using a substitute character
+        self._check_chars_permitted(forbidden_sub)
+        self.forbidden_sub = forbidden_sub
 
-            Parameters
-            ----------
-            header : str
-                A string containing a header
-
-            Returns
-            -------
-            header : str
-                A string containing the normalized header
-        """
-        header = self.replace_whitespace(header, self.whitespace_sub)
-        header = self.replace_not_permitted(header, self.permitted_chars, self.non_permitted_sub)
+    def _normalize_column_name(self, header: str) -> str:
+        header = self._replace_whitespace(header)
+        header = self._replace_forbidden(header)
         return header
 
-    @staticmethod
-    def replace_not_permitted(in_string: str, permitted_chars: str, substitute: str) -> str:
-        """Replaces not permitted characters in a string with a substitute character
-
-            Parameters
-            ----------
-            in_string : str
-                A string in which not permitted characters should be replaced
-            permitted_chars : str
-                A string containing characters allowed in the output string
-            substitute : str
-                A character to replace not permitted characters
-
-            Returns
-            -------
-            in_string : str
-                A string with only permitted characters
+    def _replace_forbidden(self, in_string: str) -> str:
         """
-        in_string = re.sub("[^" + permitted_chars + "]", substitute, in_string)
+        Replaces forbidden characters in a string by a substitute character
+
+        Args:
+            in_string:
+        Returns:
+            str - fixed name
+
+        """
+
+        in_string = re.sub("[^" + self.permitted_chars + "]", self.forbidden_sub, in_string)
         return in_string
 
 
 class EncoderHeaderNormalizer(HeaderNormalizer):
     """
-    A class used to normalize headers using a character encoder
+    Header normalizer using a character encoder
 
     """
 
-    def __init__(self, permitted_chars: str = PERMITTED_CHARS, char_encoder: str = DEFAULT_ENCODER,
-                 encode_delim:str=DEFAULT_ENCODE_DELIM, whitespace_sub:str = DEFAULT_WHITESPACE_SUB):
+    def __init__(self, permitted_chars: str = PERMITTED_CHARS, char_encoder: SupportedEncoder = DEFAULT_ENCODER,
+                 encode_delimiter: str = DEFAULT_ENCODE_DELIM, whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
-        Arguments
-        ----------
-        permitted_chars : str
-            all characters that are permitted to be in a header concatenated together in one string
-        char_encoder : str
-            type of encoding to be used for encoding non-permitted characters
-        encode_delim : str
-            character to put before and after an encoded character
-        whitespace_sub : str
-            character to substitute a whitespace
+
+        Args:
+            permitted_chars:
+            char_encoder: type of encoder to be used for encoding forbidden characters
+            encode_delimiter : str - character to put before and after an encoded character
+            whitespace_sub : str - character to substitute a whitespace
         """
-        HeaderNormalizer.__init__(self, permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
-        self.encode_delim = encode_delim
-        self.check_chars_permitted(encode_delim, permitted_chars)
-        self.char_encoder = char_encoder
-        self.normalizer = self.normalize_header_with_encoder
+        super().__init__(permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
-    def normalize_header_with_encoder(self, header: str) -> str:
-        """Normalizes a header using an encoder
+        self.encode_delimiter = encode_delimiter
+        self.char_encoder = CharEncoder(char_encoder)
 
-            The encoded character is wrapped with a specific character.
-            For example a unicoded # with a encode_delim _ will result in _35_
+    def _normalize_column_name(self, column_name: str) -> str:
 
-            Parameters
-            ----------
-            header : str
-                A string containing a header
+        new_column_name = self._replace_whitespace(column_name)
+        new_column_name = self.encode_non_permitted_chars(new_column_name)
+        return new_column_name
 
-            Returns
-            -------
-            header : str
-                A string containing the normalized header
-        """
-        char_encoder = CharEncoder(self.char_encoder)
-        header = self.replace_whitespace(header, self.whitespace_sub)
-        header = self.encode_non_permitted_chars(header, char_encoder, self.permitted_chars, self.encode_delim)
-        return header
+    def encode_non_permitted_chars(self, in_string: str) -> str:
 
-    @staticmethod
-    def encode_non_permitted_chars(in_string: str, char_encoder: CharEncoder, permitted_chars: str,
-                                   encode_delim: str) -> str:
-        """Encodes not permitted characters in a string with an encoder
-
-            Parameters
-            ----------
-            in_string : str
-                A string in which not permitted characters should be encoded
-            char_encoder : CharEncoder
-                A function that encodes a string with an encoder
-            permitted_chars : str
-                A string containing characters allowed in the output string
-            encode_delim : str
-                A character to wrap the encoded character
-
-            Returns
-            -------
-            in_string : str
-                A string containing encoded not permitted characters
-        """
-        in_string = list(in_string)
-        for i, char in enumerate(in_string):
-            if char not in permitted_chars:
-                in_string[i] = encode_delim + str(char_encoder.encode_char(char)) + encode_delim
-        return "".join(in_string)
+        column_characters = list(in_string)
+        for i, char in enumerate(column_characters):
+            if char not in self.permitted_chars:
+                column_characters[i] = self.encode_delimiter + str(
+                    self.char_encoder.encode_char(char)) + self.encode_delimiter
+        return "".join(column_characters)
 
 
 class DictHeaderNormalizer(HeaderNormalizer):
@@ -273,43 +219,27 @@ class DictHeaderNormalizer(HeaderNormalizer):
     A class used to normalize headers using a dictionary to replace characters
     """
 
-    def __init__(self, permitted_chars: str = PERMITTED_CHARS, whitespace_sub:str = DEFAULT_WHITESPACE_SUB,
-                 replace_dict : dict={}):
+    def __init__(self, replace_dict: dict, permitted_chars: str = PERMITTED_CHARS,
+                 whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
         """
         Arguments
         ----------
         permitted_chars : str
-            all characters that are permitted to be in a header concatenated together in one string
+            all characters that are permitted to be in a column concatenated together in one string
         whitespace_sub : str
             character to substitute a whitespace
         replace_dict : dict
             dictionary where keys are characters to be substituted by their specific values
         """
-        HeaderNormalizer.__init__(self, permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
+        super().__init__(permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
 
         self.replace_dict = replace_dict
-        self.check_dict_permitted(replace_dict, permitted_chars)
-        self.normalizer = self.normalize_header_with_dict
+        self._check_dict_permitted(replace_dict)
 
-    def normalize_header_with_dict(self, header: str) -> str:
-        """Normalizes a header using a dictionary
+    def _normalize_column_name(self, column_name: str) -> str:
 
-            The dictionary contains a key representing the character to be replaced and a value which
-            is used to replace the key character
-
-            Parameters
-            ----------
-            header : str
-                A string containing a header
-
-            Returns
-            -------
-            header : str
-                A string containing the normalized header
-        """
-        header = self.replace_chars_using_dict(header, self.replace_dict)
-        header = self.replace_whitespace(header, self.whitespace_sub)
-        return header
+        new_column_name = self.replace_chars_using_dict(column_name, self.replace_dict)
+        return new_column_name
 
     @staticmethod
     def replace_chars_using_dict(in_string: str, replace_dict: dict) -> str:
@@ -334,28 +264,22 @@ class DictHeaderNormalizer(HeaderNormalizer):
             in_string = in_string.replace(key, replace_dict[key])
         return in_string
 
-    def check_dict_permitted(self, in_dict: dict, permitted_chars: str):
-        """ Checks whether characters of strings in a dictionary are within a permitted characters string
+    def _check_dict_permitted(self, in_dict: dict):
+        """
+        Checks whether characters of strings in a dictionary are within a permitted characters string
 
-            Parameters
-            ----------
-            in_dict : dict
-                A dictionary of strings to check
-
-            permitted_chars : str
-                A string of characters of permitted characters
         """
         for key in in_dict:
-            self.check_chars_permitted(in_dict[key], permitted_chars)
+            self._check_chars_permitted(in_dict[key])
 
 
-class Strategies(Enum):
+class NormalizerStrategy(Enum):
     """"
-        Enumerator for header normalization strategies
+        Enumerator for column normalization strategies
 
         ...
 
-        Strategies
+        NormalizerStrategy
         ----------
         DEFAULT :
             Normalize headers using a substitute character
@@ -369,21 +293,21 @@ class Strategies(Enum):
     DICT = "DICT"
 
 
-def get_normalizer(strategy: Strategies, **params) -> HeaderNormalizer:
-    """ Factory method to initialize a header normalizer with various strategies
+def get_normalizer(strategy: NormalizerStrategy, **params) -> HeaderNormalizer:
+    """ Factory method to initialize a column normalizer with various strategies
 
         Parameters
         ----------
-        strategy : Strategies
+        strategy : NormalizerStrategy
             A strategy type
     """
-    if strategy == "DEFAULT":
+    if strategy == NormalizerStrategy.DEFAULT:
         return DefaultHeaderNormalizer(**params)
 
-    elif strategy == "ENCODER":
+    elif strategy == NormalizerStrategy.ENCODER:
         return EncoderHeaderNormalizer(**params)
 
-    elif strategy == "DICT":
+    elif strategy == NormalizerStrategy.DICT:
         return DictHeaderNormalizer(**params)
     else:
         raise ValueError(f"Strategy '{strategy}' is not supported")

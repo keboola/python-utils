@@ -1,3 +1,13 @@
+from typing import Union
+
+from .helpers import ValidatingEnum
+
+
+class SupportedEncoder(ValidatingEnum):
+    unicode = "unicode"
+    utf8 = "utf8"
+
+
 class CharEncoder:
     """
     A class used to encode characters
@@ -11,13 +21,14 @@ class CharEncoder:
 
     """
 
-    def __init__(self, encode_type: str):
+    def __init__(self, encode_type: Union[SupportedEncoder, str]):
         """
         Parameters
         ----------
         encode_type: str
             A string symbolizing a encoding strategy
         """
+
         self.encoder = self._get_encoder(encode_type)
 
     def encode_char(self, character):
@@ -35,23 +46,14 @@ class CharEncoder:
         return self.encoder(character)
 
     @staticmethod
-    def _get_encoder(encode_type):
-        """encodes a character using an encoder function
-
-            Parameters
-            ----------
-            encode_type : str
-                type of encoding function to be returned
-
-            Returns
-            -------
-            an encoder function
-        """
-        if encode_type == "unicode":
-            return ord
-        elif encode_type == "utf8":
-            return _encode_utf8
-        else:
+    def _get_encoder(encode_type: Union[SupportedEncoder, str]):
+        try:
+            _type = SupportedEncoder.get_by_name(encode_type)
+            if _type == SupportedEncoder.unicode:
+                return ord
+            elif _type == SupportedEncoder.utf8:
+                return _encode_utf8
+        except TypeError:
             raise ValueError(f"Encoder type : {encode_type} not supported")
 
 
