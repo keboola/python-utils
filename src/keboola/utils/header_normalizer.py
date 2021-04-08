@@ -16,12 +16,6 @@ from typing import List, Tuple
 from keboola.utils.char_encoder import CharEncoder, SupportedEncoder
 
 PERMITTED_CHARS = string.digits + string.ascii_letters + '_'
-PERMITTED_CHARS_KEY = "permitted_chars"
-WHITESPACE_SUB_KEY = "whitespace_sub"
-NON_PERMITTED_SUB_KEY = "forbidden_sub"
-ENCODE_DELIM_KEY = "encode_delimiter"
-ENCODER_KEY = "encoder"
-REPLACE_DICT_KEY = "replace_dict"
 
 DEFAULT_WHITESPACE_SUB = "_"
 DEFAULT_NON_PERMITTED_SUB = ""
