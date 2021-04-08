@@ -58,7 +58,7 @@ class TestFormatterUtils(unittest.TestCase):
         self.assertEqual(norm_headers, ['dac#d', 'aa$', 'b#'])
 
     def test_normalize_header_encoding(self):
-        head_norm = get_normalizer(strategy="ENCODER",non_permitted_encoder="unicode")
+        head_norm = get_normalizer(strategy="ENCODER",char_encoder="unicode")
         headers = ["dactor#fd", "a*ruas$", "48DHBb#@"]
         norm_headers = head_norm.normalize_headers(headers)
         self.assertEqual(norm_headers, ['dactor_35_fd', 'a_42_ruas_36_', '48DHBb_35__64_'])
