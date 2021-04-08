@@ -1,3 +1,8 @@
+"""
+Get alphanumerical encoding of characters using different strategies.
+
+"""
+
 from typing import Union
 
 from .helpers import ValidatingEnum
@@ -52,21 +57,21 @@ class CharEncoder:
             if _type == SupportedEncoder.unicode:
                 return ord
             elif _type == SupportedEncoder.utf8:
-                return _encode_utf8
+                return CharEncoder.encode_utf8
         except TypeError:
             raise ValueError(f"Encoder type : {encode_type} not supported")
 
+    @staticmethod
+    def encode_utf8(character):
+        """encodes a character with utf8 encoding
 
-def _encode_utf8(character):
-    """encodes a character with utf8 encoding
+        Parameters
+        ----------
+        character : str
+            character to be encoded
 
-    Parameters
-    ----------
-    character : str
-        character to be encoded
-
-    Returns
-    -------
-    an encoded character with utf8
-    """
-    return character.encode('utf8')
+        Returns
+        -------
+        an encoded character with utf8
+        """
+        return character.encode('utf8')

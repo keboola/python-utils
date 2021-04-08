@@ -1,3 +1,8 @@
+"""
+General helper functions and classes that are relevant in Keboola Connection environment.
+
+
+"""
 from enum import Enum
 from typing import List, Union
 
