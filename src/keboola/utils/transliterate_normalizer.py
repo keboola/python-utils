@@ -1,7 +1,7 @@
 from abc import ABC
 
 from camel_tools.utils.charmap import CharMapper
-from keboola.utils.header_normalizer import HeaderNormalizer, PERMITTED_CHARS, DEFAULT_WHITESPACE_SUB
+from .header_normalizer import HeaderNormalizer, PERMITTED_CHARS, DEFAULT_WHITESPACE_SUB
 from camel_tools.utils.transliterate import Transliterator
 
 
