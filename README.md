@@ -133,3 +133,39 @@ norm_headers = head_norm.normalize_header(header)
         
 # Results in: ['dactor_35_fd', 'a_42_ruas_36_', '48DHBb_35__64_'])
 ```
+
+**Example transliterate:**
+
+```python
+import keboola.utils.header_normalizer as hnorm
+
+head_norm = hnorm.get_normalizer(strategy=hnorm.NormalizerStrategy.TRANSLITERATE, transliterator_mapper="ar2safebw")
+header = ["اسم","قيمة"]
+norm_headers = head_norm.normalize_header(header)
+        
+# Results in: ['Asm','qymp'])
+```
+Available transliterator mappers:
+
+| Mapper         | Description                          |
+|----------------|--------------------------------------|
+| ar2bw          | Arabic to Buckwalter                 |
+| ar2safebw      | Arabic to Safe Buckwalter            |
+| ar2xmlbw       | Arabic to XML Buckwalter             |
+| ar2hsb         | Arabic to Habash-Soudi-Buckwalter    |
+| bw2ar          | Buckwalter to Arabic                 |
+| bw2safebw      | Buckwalter to Safe Buckwalter        |
+| bw2xmlbw       | Buckwalter to XML Buckwalter         |
+| bw2hsb         | Buckwalter to Habash-Soudi-Buckwalter|
+| safebw2ar      | Safe Buckwalter to Arabic            |
+| safebw2bw      | Safe Buckwalter to Buckwalter        |
+| safebw2xmlbw   | Safe Buckwalter to XML Buckwalter    |
+| safebw2hsb     | Safe Buckwalter to Habash-Soudi-Buckwalter |
+| xmlbw2ar       | XML Buckwalter to Arabic             |
+| xmlbw2bw       | XML Buckwalter to Buckwalter         |
+| xmlbw2safebw   | XML Buckwalter to Safe Buckwalter    |
+| xmlbw2hsb      | XML Buckwalter to Habash-Soudi-Buckwalter |
+| hsb2ar         | Habash-Soudi-Buckwalter to Arabic    |
+| hsb2bw         | Habash-Soudi-Buckwalter to Buckwalter|
+| hsb2safebw     | Habash-Soudi-Buckwalter to Safe Buckwalter |
+| hsb2xmlbw      | Habash-Soudi-Buckwalter to XML Buckwalter |

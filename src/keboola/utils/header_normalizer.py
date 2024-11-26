@@ -14,6 +14,7 @@ from enum import Enum
 from typing import List, Tuple, Union
 
 from .char_encoder import CharEncoder, SupportedEncoder
+from .transliterate_normalizer import TransliterateHeaderNormalizer
 
 PERMITTED_CHARS = string.digits + string.ascii_letters + '_'
 
@@ -284,6 +285,7 @@ class NormalizerStrategy(Enum):
     DEFAULT = "DEFAULT"
     ENCODER = "ENCODER"
     DICT = "DICT"
+    TRANSLITERATE="TRANSLITERATE"
 
 
 def get_normalizer(strategy: NormalizerStrategy, **params) -> HeaderNormalizer:
@@ -321,5 +323,8 @@ def get_normalizer(strategy: NormalizerStrategy, **params) -> HeaderNormalizer:
 
     elif strategy == NormalizerStrategy.DICT:
         return DictHeaderNormalizer(**params)
+
+    elif strategy == NormalizerStrategy.TRANSLITERATE:
+        return TransliterateHeaderNormalizer(**params)
     else:
         raise ValueError(f"Strategy '{strategy}' is not supported")
