@@ -285,7 +285,7 @@ class NormalizerStrategy(Enum):
     DEFAULT = "DEFAULT"
     ENCODER = "ENCODER"
     DICT = "DICT"
-    TRANSLITERATE="TRANSLITERATE"
+    TRANSLITERATE = "TRANSLITERATE"
 
 
 def get_normalizer(strategy: NormalizerStrategy, **params) -> HeaderNormalizer:
