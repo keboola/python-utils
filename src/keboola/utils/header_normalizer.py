@@ -13,8 +13,10 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List, Tuple, Union
 
+from camel_tools.utils.charmap import CharMapper
+from camel_tools.utils.transliterate import Transliterator
+
 from .char_encoder import CharEncoder, SupportedEncoder
-from .transliterate_normalizer import TransliterateHeaderNormalizer
 
 PERMITTED_CHARS = string.digits + string.ascii_letters + '_'
 
@@ -265,6 +267,22 @@ class DictHeaderNormalizer(HeaderNormalizer):
         """
         for key in in_dict:
             self._check_chars_permitted(in_dict[key])
+
+
+class TransliterateHeaderNormalizer(HeaderNormalizer):
+
+    def __init__(self, transliterator_mapper: str, permitted_chars: str = PERMITTED_CHARS,
+                 whitespace_sub: str = DEFAULT_WHITESPACE_SUB):
+        super().__init__(permitted_chars=permitted_chars, whitespace_sub=whitespace_sub)
+        self.transliterator_mapper = transliterator_mapper
+
+    def _normalize_column_name(self, header: str) -> str:
+        header = self._transliterate(header)
+        return header
+
+    def _transliterate(self, header: str) -> str:
+        transliterator = Transliterator(CharMapper.builtin_mapper(self.transliterator_mapper))
+        return transliterator.transliterate(header)
 
 
 class NormalizerStrategy(Enum):
