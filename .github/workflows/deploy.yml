@@ -1,4 +1,4 @@
-ename: Build & Upload Python Package to PYPI production
+name: Build & Upload Python Package to PYPI production
 
 on:
   release:
