@@ -1,8 +1,8 @@
-name: Build & Upload Python Package to PYPI production
+ename: Build & Upload Python Package to PYPI production
 
 on:
   release:
-    types: [ published ]
+    types: [ created ]
     branches:
       - main
 
