@@ -69,7 +69,7 @@ def get_past_date(str_days_ago: str, to_date: datetime = None,
     to_date = add_timezone_info(to_date, tz)
 
     try:
-        today_diff = (today_date - to_date).days
+        today_diff = (today_date.date() - to_date.date()).days
         past_date = dateparser.parse(str_days_ago)
         past_date = past_date.replace(tzinfo=tz)
         date = past_date - relativedelta(days=today_diff)
