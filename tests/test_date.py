@@ -25,7 +25,7 @@ class TestDateUtils(unittest.TestCase):
         tz = pytz.timezone('Europe/Prague')
         to_date = datetime.datetime(2021, 3, 10, 10, 0, 0, tzinfo=tz)
 
-        expected_result = datetime.datetime(2021, 3, 7, 10, 0, 0).strftime('%Y-%m-%d')
+        expected_result = datetime.datetime(2021, 3, 7, 10, 0, 0, tzinfo=tz).strftime('%Y-%m-%d')
 
         self.assertEqual(expected_result,
                          dutils.get_past_date(str_days_ago=str_days_ago, to_date=to_date, tz=tz).strftime('%Y-%m-%d'))
@@ -33,9 +33,9 @@ class TestDateUtils(unittest.TestCase):
     def test_get_past_date_no_tz(self):
         str_days_ago = '3 days ago'
         tz = pytz.timezone('Europe/Prague')
-        to_date = datetime.datetime(2021, 3, 10, 10, 0, 0)
+        to_date = datetime.datetime(2021, 3, 10, 10, 0, 0, tzinfo=tz)
 
-        expected_result = datetime.datetime(2021, 3, 7, 10, 0, 0).strftime('%Y-%m-%d')
+        expected_result = datetime.datetime(2021, 3, 7, 10, 0, 0, tzinfo=tz).strftime('%Y-%m-%d')
 
         self.assertEqual(expected_result,
                          dutils.get_past_date(str_days_ago=str_days_ago, to_date=to_date, tz=tz).strftime('%Y-%m-%d'))
