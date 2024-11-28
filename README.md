@@ -169,6 +169,7 @@ Available transliterator mappers:
 | hsb2bw         | Habash-Soudi-Buckwalter to Buckwalter|
 | hsb2safebw     | Habash-Soudi-Buckwalter to Safe Buckwalter |
 | hsb2xmlbw      | Habash-Soudi-Buckwalter to XML Buckwalter |
+
 =======
 ## License
 
