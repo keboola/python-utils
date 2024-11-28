@@ -3,7 +3,6 @@ import datetime
 import types
 import unittest
 import pytz
-from freezegun import freeze_time
 import keboola.utils.date as dutils
 
 
