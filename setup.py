@@ -17,7 +17,8 @@ setuptools.setup(
     tests_require=['pytest'],
     install_requires=[
         'dateparser',
-        'pytz'
+        'pytz',
+        'camel_tools'
     ],
     author_email="support@keboola.com",
     description="General utility library for Python applications running in Keboola Connection environment",
