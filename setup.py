@@ -10,15 +10,14 @@ project_urls = {
 
 setuptools.setup(
     name="keboola.utils",
-    version="1.1.2",
+    version="1.1.0",
     author="Keboola KDS Team",
     project_urls=project_urls,
     setup_requires=['pytest-runner', 'flake8'],
     tests_require=['pytest'],
     install_requires=[
         'dateparser',
-        'pytz',
-        'camel_tools'
+        'pytz'
     ],
     author_email="support@keboola.com",
     description="General utility library for Python applications running in Keboola Connection environment",

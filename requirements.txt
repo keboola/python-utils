@@ -1,3 +1,2 @@
 dateparser
 pytz
-camel_tools

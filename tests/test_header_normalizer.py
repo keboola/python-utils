@@ -63,9 +63,3 @@ class TestFormatterUtils(unittest.TestCase):
         headers = ["dactor#fd", "a*ruas$", "48DHBb#@"]
         norm_headers = head_norm.normalize_header(headers)
         self.assertEqual(norm_headers, ['dactor_35_fd', 'a_42_ruas_36_', '48DHBb_35__64_'])
-
-    def test_transliteration(self):
-        head_norm = get_normalizer(strategy=NormalizerStrategy.TRANSLITERATE, transliterator_mapper="ar2safebw")
-        headers = ["اسم","قيمة"]
-        norm_headers = head_norm.normalize_header(headers)
-        self.assertEqual(norm_headers, ['Asm','qymp'])
