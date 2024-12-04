@@ -133,6 +133,7 @@ norm_headers = head_norm.normalize_header(header)
         
 # Results in: ['dactor_35_fd', 'a_42_ruas_36_', '48DHBb_35__64_'])
 ```
+
 ## License
 
 MIT licensed, see [LICENSE](./LICENSE) file.
